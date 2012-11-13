@@ -55,7 +55,7 @@ static bool_t get_input_and_check(ttt *t, int player, player_t p_type)
     p_char = (player == 1) ? 'X' : 'O';
 
     for(;;) {
-        printf("\nYour move [<row> <col>]: ");
+        printf("\nP%d - Your move [<row> <col>]: ", player);
 
         if (p_type == PLAYER_HUMAN) {
             scanf("%d %d", &r, &c);
