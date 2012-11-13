@@ -6,6 +6,8 @@
 static ttt *_open_shm(int flags)
 {
     ttt *t;
+    
+#ifdef __unix__
     int fd;
 
     if (flags & SHM_INIT) {
@@ -17,9 +19,25 @@ static ttt *_open_shm(int flags)
         fd = open(SHMFILE, O_RDWR);
     }
 
-    t = mmap(NULL, SHMSIZE,
+    t = (ttt *) mmap(NULL, SHMSIZE,
         PROT_READ | PROT_WRITE,
         MAP_SHARED, fd, 0);
+#endif /* __unix__ */
+#ifdef _WIN32
+    HANDLE hMapFile;
+
+    hMapFile = CreateFileMapping(
+        INVALID_HANDLE_VALUE,
+        NULL,
+        PAGE_READWRITE,
+        0,
+        SHMSIZE,
+        SHMFILE);
+
+    t = (ttt *) MapViewOfFile(hMapFile,
+        FILE_MAP_READ | FILE_MAP_WRITE,
+        0, 0, SHMSIZE);
+#endif /* _WIN32 */
 
     if (flags & SHM_INIT) {
         int r, c; /* row, col */
@@ -38,12 +56,20 @@ static ttt *_open_shm(int flags)
         t->player_turn = 0;
         t->end = 1;
 
+#ifdef __unix__       
         munmap(t, SHMSIZE);
         close(fd);
+#endif
+#ifdef _WIN32
+        UnmapViewOfFile(t);
+        CloseHandle(hMapFile);
+#endif        
         return NULL;
     }
 
+#ifdef __unix__
     close(fd);
+#endif
     return t;
 }
 
