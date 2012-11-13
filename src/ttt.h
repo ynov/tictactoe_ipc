@@ -17,4 +17,7 @@ typedef struct {
     int end;
 } ttt;
 
+void server_start(player_t p_type);
+void client_start(player_t p_type);
+
 #endif
