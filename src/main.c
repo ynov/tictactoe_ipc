@@ -16,6 +16,5 @@ int main(int argc, char **argv)
         printf("    %s --client    Start Client (Player 2)\n", argv[0]);
     }
 
-    close_shm();
     return 0;
 }
