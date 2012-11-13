@@ -91,7 +91,7 @@ static void player_loop(ttt *t, int player, player_t p_type)
         printf("\nWaiting for Player %d...\n\n", (player == 1) ? 2 : 1);
         
         while (t->player_turn != player)
-            ;
+            usleep(30 * 1000);
 
         if (t->end > 0) {
             print_board(t);
@@ -118,7 +118,7 @@ void server_start(player_t p_type)
     printf("Waiting for client...\n");
 
     while (t->num_player != 2)
-        ;
+        usleep(30 * 1000);
 
     printf("Player 2 connected!\n");
     
