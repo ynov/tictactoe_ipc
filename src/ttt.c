@@ -88,7 +88,7 @@ static bool_t get_input_and_check(ttt *t, int player, player_t p_type)
 static void player_loop(ttt *t, int player, player_t p_type)
 {
      for(;;) {
-        printf("\nWaiting for Player %d...\n\n", player);
+        printf("\nWaiting for Player %d...\n\n", (player == 1) ? 2 : 1);
         
         while (t->player_turn != player)
             ;
