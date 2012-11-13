@@ -94,7 +94,8 @@ static void player_loop(ttt *t, int player, player_t p_type)
             ;
 
         if (t->end > 0) {
-            printf("Player %d win!\n", t->end);
+            print_board(t);
+            printf("\nPlayer %d win!\n", t->end);
             close_shm();
             break;
         }
