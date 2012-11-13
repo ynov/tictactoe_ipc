@@ -10,7 +10,7 @@ static ttt *_open_shm(int flags)
 
     if (flags & SHM_INIT) {
         fd = open(SHMFILE, O_CREAT | O_RDWR | O_TRUNC, 0600);
-        lseek(fd, sizeof(ttt), SEEK_END);
+        lseek(fd, SHMSIZE, SEEK_END);
         write(fd, "", 1);
     }
     else if (flags & SHM_OPEN || flags & SHM_END) {

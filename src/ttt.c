@@ -17,8 +17,7 @@ static void print_board(ttt *t)
     }
 }
 
-
-static int check_board(ttt *t, int player)
+static bool_t check_board(ttt *t, int player)
 {
     int r, c;
     char p_char;
@@ -30,25 +29,25 @@ static int check_board(ttt *t, int player)
     /* check horizontal */
     for (r = 0; r < 3; r++) {
         if (RC(r, 0) && RC(r, 1) && RC(r, 2))
-            return 1;
+            return TRUE;
     }
 
     /* check vertical */
     for (c = 0; c < 3; c++) {
         if (RC(0, c) && RC(1, c) && RC(2, c))
-            return 1;
+            return TRUE;
     }
 
     /* check diagonal */
     if (RC(0, 0) && RC(1, 1) && RC(2, 2))
-        return 1;
+        return TRUE;
     if (RC(0, 2) && RC(1, 1) && RC(2, 0))
-        return 1;
+        return TRUE;
 
-    return 0;
+    return FALSE;
 }
 
-static int get_input_and_check(ttt *t, int player)
+static bool_t get_input_and_check(ttt *t, int player, player_t p_type)
 {
     int r, c, check;
     char p_char;
@@ -57,16 +56,21 @@ static int get_input_and_check(ttt *t, int player)
 
     for(;;) {
         printf("\nYour move [<row> <col>]: ");
-        scanf("%d %d", &r, &c);
-        
-        if (t->board[r-1][c-1] == '_'
-            && r >= 1 && r <= 4
-            && c >= 1 && c <= 4)
-        {
-            t->board[r - 1][c - 1] = p_char;
-            break;
-        } else {
-            printf("Bad move, repeat\n");
+
+        if (p_type == PLAYER_HUMAN) {
+            scanf("%d %d", &r, &c);
+            
+            if (t->board[r-1][c-1] == '_'
+                && r >= 1 && r <= 4
+                && c >= 1 && c <= 4)
+            {
+                t->board[r - 1][c - 1] = p_char;
+                break;
+            } else {
+                printf("Bad move, repeat\n");
+            }
+        } else { /* PLAYER_PC */
+            /* TODO */
         }
     }
 
@@ -81,7 +85,29 @@ static int get_input_and_check(ttt *t, int player)
     return check;
 }
 
-void server_start()
+static void player_loop(ttt *t, int player, player_t p_type)
+{
+     for(;;) {
+        printf("\nWaiting for Player %d...\n\n", player);
+        
+        while (t->player_turn != player)
+            ;
+
+        if (t->end > 0) {
+            printf("Player %d win!\n", t->end);
+            close_shm();
+            break;
+        }
+
+        print_board(t);
+        if (get_input_and_check(t, player, p_type)) {
+            printf("\nYou win!\n");
+            break;
+        }
+    }   
+}
+
+void server_start(player_t p_type)
 {
     ttt *t;
     
@@ -94,28 +120,11 @@ void server_start()
         ;
 
     printf("Player 2 connected!\n");
-
-    for(;;) {
-        printf("\nWaiting for Player 2...\n\n");
-        
-        while (t->player_turn != 1)
-            ;
-
-        if (t->end) {
-            printf("Player %d win!\n", t->end);
-            close_shm();
-            break;
-        }
-
-        print_board(t);
-        if (get_input_and_check(t, 1)) {
-            printf("\nYou win!\n");
-            break;
-        }
-    }
+    
+    player_loop(t, 1, p_type);
 }
 
-void client_start()
+void client_start(player_t p_type)
 {
     ttt *t;
     
@@ -130,23 +139,6 @@ void client_start()
         return;
     }
 
-    for(;;) {
-        printf("\nWaiting for Player 1...\n\n");
-        
-        while (t->player_turn != 2)
-            ;
-        
-        if (t->end != 0) {
-            printf("Player %d win!\n", t->end);
-            close_shm();
-            break;
-        }
-
-        print_board(t);
-        if (get_input_and_check(t, 2)) {
-            printf("\nYou win!\n");
-            break;
-        }
-    }
+    player_loop(t, 2, p_type);
 }
 
