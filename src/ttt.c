@@ -18,7 +18,7 @@ static void print_board(ttt *t)
     }
 }
 
-static bool_t check_board(ttt *t, int player)
+static int check_board(ttt *t, int player)
 {
     int r, c;
     char p_char;
@@ -30,22 +30,30 @@ static bool_t check_board(ttt *t, int player)
     /* check horizontal */
     for (r = 0; r < 3; r++) {
         if (RC(r, 0) && RC(r, 1) && RC(r, 2))
-            return TRUE;
+            return 1;
     }
 
     /* check vertical */
     for (c = 0; c < 3; c++) {
         if (RC(0, c) && RC(1, c) && RC(2, c))
-            return TRUE;
+            return 1;
     }
 
     /* check diagonal */
     if (RC(0, 0) && RC(1, 1) && RC(2, 2))
-        return TRUE;
+        return 1;
     if (RC(0, 2) && RC(1, 1) && RC(2, 0))
-        return TRUE;
+        return 1;
 
-    return FALSE;
+    for (r = 0; r < 3; r++) {
+        for (c = 0; c < 3; c++) {
+            if (t->board[r][c] == '_') {
+                return 0;
+            }
+        }
+    }
+
+    return -1;
 }
 
 static void cpu_move(ttt *t, int player)
@@ -133,7 +141,7 @@ static void cpu_move(ttt *t, int player)
     }
 }
 
-static bool_t get_input_and_check(ttt *t, int player, player_t p_type)
+static int get_input_and_check(ttt *t, int player, player_t p_type)
 {
     int r, c, check;
     char p_char;
@@ -162,8 +170,10 @@ static bool_t get_input_and_check(ttt *t, int player, player_t p_type)
     }
 
     check = check_board(t, player);
-    if (check) {
+    if (check > 0) {
         t->end = player;
+    } else if (check == -1) {
+        t->end = -1;
     }
 
     t->player_turn = (t->player_turn == 1) ? 2 : 1;
@@ -174,22 +184,32 @@ static bool_t get_input_and_check(ttt *t, int player, player_t p_type)
 
 static void player_loop(ttt *t, int player, player_t p_type)
 {
-     for(;;) {
+    int res;
+
+    for(;;) {
         printf("\nWaiting for Player %d...\n\n", (player == 1) ? 2 : 1);
         
         while (t->player_turn != player)
             usleep(30 * 1000);
 
-        if (t->end > 0) {
+        if (t->end > 0 || t->end == -1) {
             print_board(t);
-            printf("\nPlayer %d win!\n", t->end);
+            if (t->end > 0)
+                printf("\nPlayer %d win!\n", t->end);
+            else
+                printf("\nDraw!\n");
             close_shm();
             break;
         }
 
         print_board(t);
-        if (get_input_and_check(t, player, p_type)) {
+        
+        res = get_input_and_check(t, player, p_type);
+        if (res > 0) {
             printf("\nYou win!\n");
+            break;
+        } else if (res == -1) {
+            printf("\nDraw!\n");
             break;
         }
     }   

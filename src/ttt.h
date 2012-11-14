@@ -2,10 +2,6 @@
 #define _TTT_H_
 
 typedef int player_t;
-typedef int bool_t;
-
-#define FALSE 0
-#define TRUE  1
 
 #define PLAYER_HUMAN 1
 #define PLAYER_PC    2
