@@ -30,30 +30,30 @@ static int check_board(ttt *t, int player)
     /* check horizontal */
     for (r = 0; r < 3; r++) {
         if (RC(r, 0) && RC(r, 1) && RC(r, 2))
-            return 1;
+            return WIN;
     }
 
     /* check vertical */
     for (c = 0; c < 3; c++) {
         if (RC(0, c) && RC(1, c) && RC(2, c))
-            return 1;
+            return WIN;
     }
 
     /* check diagonal */
     if (RC(0, 0) && RC(1, 1) && RC(2, 2))
-        return 1;
+        return WIN;
     if (RC(0, 2) && RC(1, 1) && RC(2, 0))
-        return 1;
+        return WIN;
 
     for (r = 0; r < 3; r++) {
         for (c = 0; c < 3; c++) {
             if (t->board[r][c] == '_') {
-                return 0;
+                return NEXT;
             }
         }
     }
 
-    return -1;
+    return DRAW;
 }
 
 static void cpu_move(ttt *t, int player)
@@ -154,7 +154,7 @@ static int get_input_and_check(ttt *t, int player, player_t p_type)
         if (p_type == PLAYER_HUMAN) {
             scanf("%d %d", &r, &c);
             
-            if (t->board[r-1][c-1] == '_'
+            if (t->board[r - 1][c - 1] == '_'
                 && r >= 1 && r <= 4
                 && c >= 1 && c <= 4)
             {
@@ -170,9 +170,9 @@ static int get_input_and_check(ttt *t, int player, player_t p_type)
     }
 
     check = check_board(t, player);
-    if (check > 0) {
+    if (check == WIN) {
         t->end = player;
-    } else if (check == -1) {
+    } else if (check == DRAW) {
         t->end = -1;
     }
 
@@ -205,10 +205,10 @@ static void player_loop(ttt *t, int player, player_t p_type)
         print_board(t);
         
         res = get_input_and_check(t, player, p_type);
-        if (res > 0) {
+        if (res == WIN) {
             printf("\nYou win!\n");
             break;
-        } else if (res == -1) {
+        } else if (res == DRAW) {
             printf("\nDraw!\n");
             break;
         }
