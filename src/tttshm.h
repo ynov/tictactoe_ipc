@@ -1,6 +1,9 @@
 #ifndef _TTTSHM_H_
 #define _TTTSHM_H_
 
+#define SHMFILE "/tmp/tttshm"
+#define SHMSIZE (sizeof(ttt))
+
 #ifdef __unix__
 #   include <sys/mman.h>
 #   include <unistd.h>
@@ -9,17 +12,11 @@
 
 #ifdef _WIN32
 #   include <windows.h>
+#   undef SHMFILE
+#   define SHMFILE "tttshm"
 #endif
 
 #include "ttt.h"
-
-#define SHMFILE "/tmp/tttshm"
-#define SHMSIZE (sizeof(ttt))
-
-#ifdef _WIN32
-#undef SHMFILE
-#define SHMFILE "tttshm"
-#endif
 
 #define SHM_OPEN (1 << 0)
 #define SHM_INIT (1 << 1)
