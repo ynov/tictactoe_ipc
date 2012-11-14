@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "ttt.h"
 #include "tttshm.h"
@@ -47,6 +48,91 @@ static bool_t check_board(ttt *t, int player)
     return FALSE;
 }
 
+static void cpu_move(ttt *t, int player)
+{
+    int r, c, rc, i, j, k;
+    char p_char, o_char; /* player, opponent */
+
+    p_char = (player == 1) ? 'X' : 'O';
+    o_char = (p_char == 'X') ? 'O' : 'X';
+
+    /* h */
+    for (r = 0; r < 3; r++) {
+        i = 0;
+        j = 0;
+        k = 0;
+        for (c = 0; c < 3; c++) {
+            i = (t->board[r][c] == o_char) ? i + 1 : i;
+            j = (t->board[r][c] == p_char) ? j + 1 : j;
+            k = (t->board[r][c] == '_') ? c : k;
+        }
+        if ((i == 2 || j == 2) && k != 0) {
+            printf("%d %d\n", r + 1, k + 1);
+            t->board[r][k] = p_char;
+            return;
+        }
+    }
+
+    /* v */
+    for (c = 0; c < 3; c++) {
+        i = 0;
+        j = 0;
+        k = 0;
+        for (r = 0; r < 3; r++) {
+            i = (t->board[r][c] == o_char) ? i + 1 : i;
+            j = (t->board[r][c] == p_char) ? j + 1 : j;
+            k = (t->board[r][c] == '_') ? r : k;
+        }
+        if ((i == 2 || j == 2) && k != 0) {
+            printf("%d %d\n", k + 1, c + 1);
+            t->board[k][c] = p_char;
+            return;
+        }
+    }
+
+    /* diagonal 1 */
+    i = 0;
+    j = 0;
+    k = 0;
+    for (rc = 0; rc < 3; rc++) {
+        i = (t->board[rc][rc] == o_char) ? i + 1 : i;
+        j = (t->board[rc][rc] == p_char) ? j + 1 : j;
+        k = (t->board[rc][rc] == '_') ? rc : k;
+    }
+    if ((i == 2 || j == 2) && k != 0) {
+        printf("%d %d\n", k + 1, k + 1);
+        t->board[k][k] = p_char;
+        return;
+    }
+
+    /* diagonal 2 */
+    i = 0;
+    j = 0;
+    k = 0;
+    for (rc = 0; rc < 3; rc++) {
+        i = (t->board[rc][2 - rc] == o_char) ? i + 1 : i;
+        j = (t->board[rc][2 - rc] == p_char) ? j + 1 : j;
+        k = (t->board[rc][2 - rc] == '_') ? rc : k;
+    }
+    if ((i == 2 || j == 2) && k != 0) {
+        printf("%d %d\n", k + 1, 2 - k + 1);
+        t->board[k][2 - k] = p_char;
+        return;
+    }
+
+    /* random placement */
+    srand(time(NULL));
+    for (;;) {
+        r = rand() % 3;
+        c = rand() % 3;
+        if (t->board[r][c] == '_') {
+            printf("%d %d\n", r + 1, c + 1);
+            t->board[r][c] = p_char;
+            return;
+        }
+    }
+}
+
 static bool_t get_input_and_check(ttt *t, int player, player_t p_type)
 {
     int r, c, check;
@@ -70,7 +156,8 @@ static bool_t get_input_and_check(ttt *t, int player, player_t p_type)
                 printf("Bad move, repeat\n");
             }
         } else { /* PLAYER_PC */
-            /* TODO */
+            cpu_move(t, player);
+            break;
         }
     }
 
