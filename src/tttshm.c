@@ -17,7 +17,7 @@ static ttt *_open_shm(int flags)
         fd = open(SHMFILE, O_RDWR);
     }
 
-    t = mmap(NULL, SHMSIZE,
+    t = (ttt *) mmap(NULL, SHMSIZE,
         PROT_READ | PROT_WRITE,
         MAP_SHARED, fd, 0);
 
